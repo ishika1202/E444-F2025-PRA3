@@ -23,7 +23,9 @@ DATABASE = "flaskr.db"
 USERNAME = "admin"
 PASSWORD = "admin"
 SECRET_KEY = "change_me"
-url = os.getenv("DATABASE_URL", f"sqlite:///{Path(basedir).joinpath(DATABASE)}")
+url = os.getenv(
+    "DATABASE_URL", f"sqlite:///{Path(basedir).joinpath(DATABASE)}"
+)
 
 if url.startswith("postgres://"):
     url = url.replace("postgres://", "postgresql://", 1)
@@ -39,7 +41,7 @@ app.config.from_object(__name__)
 # init sqlalchemy
 db = SQLAlchemy(app)
 
-from project import models
+from project import models  # noqa: E402
 
 
 def login_required(f):
@@ -85,7 +87,7 @@ def login():
             session["logged_in"] = True
             flash("You were logged in")
             return redirect(url_for("index"))
-    return render_template("login.html", error=error)
+    return render_template("logi.html", error=error)
 
 
 @app.route("/logout")
