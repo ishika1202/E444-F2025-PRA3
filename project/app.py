@@ -92,10 +92,15 @@ def add_entry():
     """Adds new post to the database."""
     if not session.get("logged_in"):
         abort(401)
-    new_entry = models.Post(request.form["title"], request.form["text"])
-    db.session.add(new_entry)
-    db.session.commit()
-    flash("New entry was successfully posted")
+    try:
+        new_entry = models.Post(request.form["title"], request.form["text"])
+        db.session.add(new_entry)
+        db.session.commit()
+        flash("New entry was successfully posted")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error posting entry: {str(e)}")
+        return redirect(url_for("index"))
     return redirect(url_for("index"))
 
 
@@ -142,10 +147,16 @@ def delete_entry(post_id):
 @app.route("/search/", methods=["GET"])
 def search():
     query = request.args.get("query")
-    entries = db.session.query(models.Post).all()
     if query:
+        # Filter in database instead of template
+        entries = db.session.query(models.Post).filter(
+            db.or_(
+                models.Post.title.ilike(f"%{query}%"),
+                models.Post.text.ilike(f"%{query}%")
+            )
+        ).all()
         return render_template("search.html", entries=entries, query=query)
-    return render_template("search.html")
+    return render_template("search.html", entries=[], query="")
 
 
 if __name__ == "__main__":
