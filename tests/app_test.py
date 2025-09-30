@@ -13,9 +13,7 @@ def client():
     BASE_DIR = Path(__file__).resolve().parent.parent
     app.config["TESTING"] = True
     app.config["DATABASE"] = BASE_DIR.joinpath(TEST_DB)
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite:///{BASE_DIR.joinpath(TEST_DB)}"
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{BASE_DIR.joinpath(TEST_DB)}"
 
     with app.app_context():
         db.create_all()  # setup
