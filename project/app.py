@@ -32,11 +32,19 @@ if url.startswith("postgres://"):
 
 SQLALCHEMY_DATABASE_URI = url
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-SQLALCHEMY_ENGINE_OPTIONS = {
-    "pool_pre_ping": True,
-    "pool_recycle": 300,
-    "connect_args": {"connect_timeout": 10},
-}
+
+# Different connection options for PostgreSQL vs SQLite
+if url.startswith("postgresql://"):
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "connect_args": {"connect_timeout": 10},
+    }
+else:  # SQLite
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "connect_args": {"check_same_thread": False},
+    }
 
 print(f"🔍 Database URL: {url[:30]}...", file=sys.stderr, flush=True)
 
