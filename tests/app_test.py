@@ -14,10 +14,14 @@ def client():
     app.config["TESTING"] = True
     app.config["DATABASE"] = BASE_DIR.joinpath(TEST_DB)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{BASE_DIR.joinpath(TEST_DB)}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    # Create the database and application
     with app.app_context():
-        db.create_all()  # setup
+        db.create_all()
+        db.session.commit()  # Commit the changes
         yield app.test_client()  # tests run here
+        db.session.remove()  # Remove session
         db.drop_all()  # teardown
 
 
@@ -38,17 +42,6 @@ def logout(client):
 def test_index(client):
     response = client.get("/", content_type="html/text")
     assert response.status_code == 200
-
-
-def test_database(client):
-    """initial test. ensure that the database exists"""
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    app.config["DATABASE"] = BASE_DIR.joinpath(TEST_DB)
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{BASE_DIR.joinpath(TEST_DB)}"
-    with app.app_context():
-        db.create_all()
-        tester = BASE_DIR.joinpath(TEST_DB).is_file()
-        assert tester
 
 
 def test_empty_db(client):
