@@ -1,4 +1,5 @@
 import os
+import sys
 from functools import wraps
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from flask import (
 )
 from flask_sqlalchemy import SQLAlchemy
 
+print("🚀 Starting app initialization...", file=sys.stderr, flush=True)
 
 basedir = Path(__file__).resolve().parent
 
@@ -35,17 +37,21 @@ SQLALCHEMY_ENGINE_OPTIONS = {
     "pool_recycle": 300,
 }
 
-print(f"🔍 Connecting to database: {url[:20]}...")  # Debug log
-
+print(f"🔍 Database URL: {url[:30]}...", file=sys.stderr, flush=True)
 
 # create and initialize a new Flask app
+print("📦 Creating Flask app...", file=sys.stderr, flush=True)
 app = Flask(__name__)
 # load the config
 app.config.from_object(__name__)
 # init sqlalchemy
+print("💾 Initializing SQLAlchemy...", file=sys.stderr, flush=True)
 db = SQLAlchemy(app)
 
+print("📋 Loading models...", file=sys.stderr, flush=True)
 from project import models  # noqa: E402
+
+print("✅ App initialization complete!", file=sys.stderr, flush=True)
 
 
 def login_required(f):
