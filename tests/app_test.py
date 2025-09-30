@@ -43,7 +43,7 @@ def test_index(client):
 def test_database(client):
     """initial test. ensure that the database exists"""
     BASE_DIR = Path(__file__).resolve().parent.parent
-    tester = BASE_DIR.joinpath("project", TEST_DB).is_file()
+    tester = BASE_DIR.joinpath(TEST_DB).is_file()
     assert tester
 
 
