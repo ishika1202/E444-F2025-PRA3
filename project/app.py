@@ -35,6 +35,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ENGINE_OPTIONS = {
     "pool_pre_ping": True,
     "pool_recycle": 300,
+    "connect_args": {"connect_timeout": 10},
 }
 
 print(f"🔍 Database URL: {url[:30]}...", file=sys.stderr, flush=True)
@@ -63,6 +64,12 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+@app.route("/health")
+def health():
+    """Health check endpoint for Render - no DB query needed."""
+    return jsonify({"status": "healthy"}), 200
 
 
 @app.route("/")
