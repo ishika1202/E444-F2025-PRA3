@@ -75,7 +75,7 @@ def health():
 @app.route("/")
 def index():
     """Searches the database for entries, then displays them."""
-    entries = db.session.query(models.Post)
+    entries = db.session.query(models.Post).all()
     return render_template("index.html", entries=entries)
 
 
@@ -134,7 +134,7 @@ def delete_entry(post_id):
 @app.route("/search/", methods=["GET"])
 def search():
     query = request.args.get("query")
-    entries = db.session.query(models.Post)
+    entries = db.session.query(models.Post).all()
     if query:
         return render_template("search.html", entries=entries, query=query)
     return render_template("search.html")
