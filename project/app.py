@@ -1,5 +1,4 @@
 import os
-import sys
 from functools import wraps
 from pathlib import Path
 
@@ -16,7 +15,6 @@ from flask import (
 )
 from flask_sqlalchemy import SQLAlchemy
 
-print("🚀 Starting app initialization...", file=sys.stderr, flush=True)
 
 basedir = Path(__file__).resolve().parent
 
@@ -33,34 +31,15 @@ if url.startswith("postgres://"):
 SQLALCHEMY_DATABASE_URI = url
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-# Different connection options for PostgreSQL vs SQLite
-if url.startswith("postgresql://"):
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_pre_ping": True,
-        "pool_recycle": 300,
-        "connect_args": {"connect_timeout": 10},
-    }
-else:  # SQLite
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_pre_ping": True,
-        "connect_args": {"check_same_thread": False},
-    }
-
-print(f"🔍 Database URL: {url[:30]}...", file=sys.stderr, flush=True)
 
 # create and initialize a new Flask app
-print("📦 Creating Flask app...", file=sys.stderr, flush=True)
 app = Flask(__name__)
 # load the config
 app.config.from_object(__name__)
 # init sqlalchemy
-print("💾 Initializing SQLAlchemy...", file=sys.stderr, flush=True)
 db = SQLAlchemy(app)
 
-print("📋 Loading models...", file=sys.stderr, flush=True)
-from project import models  # noqa: E402
-
-print("✅ App initialization complete!", file=sys.stderr, flush=True)
+from project import models
 
 
 def login_required(f):
@@ -74,16 +53,10 @@ def login_required(f):
     return decorated_function
 
 
-@app.route("/health")
-def health():
-    """Health check endpoint for Render - no DB query needed."""
-    return jsonify({"status": "healthy"}), 200
-
-
 @app.route("/")
 def index():
     """Searches the database for entries, then displays them."""
-    entries = db.session.query(models.Post).all()
+    entries = db.session.query(models.Post)
     return render_template("index.html", entries=entries)
 
 
@@ -92,15 +65,10 @@ def add_entry():
     """Adds new post to the database."""
     if not session.get("logged_in"):
         abort(401)
-    try:
-        new_entry = models.Post(request.form["title"], request.form["text"])
-        db.session.add(new_entry)
-        db.session.commit()
-        flash("New entry was successfully posted")
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error posting entry: {str(e)}")
-        return redirect(url_for("index"))
+    new_entry = models.Post(request.form["title"], request.form["text"])
+    db.session.add(new_entry)
+    db.session.commit()
+    flash("New entry was successfully posted")
     return redirect(url_for("index"))
 
 
@@ -117,7 +85,7 @@ def login():
             session["logged_in"] = True
             flash("You were logged in")
             return redirect(url_for("index"))
-    return render_template("logi.html", error=error)
+    return render_template("login.html", error=error)
 
 
 @app.route("/logout")
@@ -147,16 +115,10 @@ def delete_entry(post_id):
 @app.route("/search/", methods=["GET"])
 def search():
     query = request.args.get("query")
+    entries = db.session.query(models.Post)
     if query:
-        # Filter in database instead of template
-        entries = db.session.query(models.Post).filter(
-            db.or_(
-                models.Post.title.ilike(f"%{query}%"),
-                models.Post.text.ilike(f"%{query}%")
-            )
-        ).all()
         return render_template("search.html", entries=entries, query=query)
-    return render_template("search.html", entries=[], query="")
+    return render_template("search.html")
 
 
 if __name__ == "__main__":
