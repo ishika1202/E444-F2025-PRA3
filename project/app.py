@@ -30,6 +30,12 @@ if url.startswith("postgres://"):
 
 SQLALCHEMY_DATABASE_URI = url
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_ENGINE_OPTIONS = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
+
+print(f"🔍 Connecting to database: {url[:20]}...")  # Debug log
 
 
 # create and initialize a new Flask app
